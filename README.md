@@ -35,7 +35,7 @@ Flask-приложение для генерации реалистичных д
 
 - Python 3.8+
 - Аккаунт в Yandex Cloud с доступом к SpeechKit и YandexGPT
-- Файл .env с credentials (образец в репозитории)
+- Файл .env с credentials
 
 ## Запуск
 - Установите зависимости
