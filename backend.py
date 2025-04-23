@@ -7,7 +7,7 @@ characters = {
     'Диоген': {
         'description': """
         Диоген, древнегреческий философ. В своих ответах используй глубокие размышления, думай о высоком, используй примеры из времен древней греции.
-        """
+        """,
         'voice': 'kirill',
     },
     'Строитель': {
@@ -26,8 +26,8 @@ front_manager = None
 @app.route("/start", methods=["POST"])
 def start():
     global front_manager
-    character_a = request.json.get("character_a", "Alice")
-    character_b = request.json.get("character_b", "Bob")
+    character_a = request.json.get("character_a", "Диоген")
+    character_b = request.json.get("character_b", "Строитель")
     front_manager = FrontManager(character_a, character_b)
     front_manager.start()
     return '', 204 
@@ -75,7 +75,7 @@ class Diologue:
     self.companion
     self.history = []
 
-  def call_llm_api(self, user_promt: str): -> str
+  def call_llm_api(self, user_promt: str) -> str:
     if user_promt == 'start':
       system_promt = f"""
         Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
@@ -156,21 +156,18 @@ class FrontManager:
         self.turn = 0
         self.character_a = character_a
         self.character_b = character_b
-        self.diologue = Diologue(character_a, character_b)
+        self.dialogue = Diologue(character_a, character_b)
         self.sound_id = 0
         self.tts = Sound()
-        self.audio_queue = deque(maxlen=MAX_AUDIO_BUFFER)
+        self.audio_queue = deque(maxlen=10)
 
     def next_turn(self, topic: str = ''):
-        if len
-        user_prompt = topic if topic else ''
-        text_block = self.diologue.call_llm_api(user_prompt)
-        parsed = self.diologue.parse_response(text_block)
-        self.dialogue.history - 
-        self.text_queue.extend(parsed)
 
-    def generate_audio(self):
-        while self.dialogue.history and len(self.audio_queue) < MAX_AUDIO_BUFFER:
+        if len(self.dialogue.history) < 20:
+            self.dialogue.response(topic)
+
+        while self.turn < len(self.dialogue.history) and len(self.audio_queue) < 10:
+            r = self.dialogue.history[self.turn]
             audio = self.tts.voice(r['speaker'], r['text'], self.turn)
             self.audio_queue.append({
                 "turn": self.turn,
@@ -187,7 +184,7 @@ class FrontManager:
         return self.audio_queue.popleft() if self.audio_queue else None
 
     def inject_topic(self, new_topic: str):
-        self.dialogue.history = self.dialogue.history[-1*(self.turn - self.sound_id):]
+        self.dialogue.history = self.dialogue.history[:self.sound_id]
         self.next_turn(new_topic)
 
     def start(self):
