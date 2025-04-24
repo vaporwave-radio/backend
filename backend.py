@@ -60,8 +60,8 @@ def inject_topic(data: dict):
     return {"status": "ok"}
 
 
-def request_LLM(system_promt: str, user_promt: str) -> str:
-  return modules_api.request_llm(system_promt, user_promt)
+def request_LLM(system_prompt: str, user_prompt: str) -> str:
+  return modules_api.request_llm(system_prompt, user_prompt)
 
 def request_TTS(voice: str, replica: str) -> bytes:
   return modules_api.request_tts(voice, replica)
@@ -69,26 +69,26 @@ def request_TTS(voice: str, replica: str) -> bytes:
 def request_from_front():
   return ''  
 
-class Diologue:
+class Dialogue:
   def init(self, name: str):
     self.name = name
     self.companion
     self.history = []
 
-  def call_llm_api(self, user_promt: str) -> str:
-    if user_promt == 'start':
-      system_promt = f"""
+  def call_llm_api(self, user_prompt: str) -> str:
+    if user_prompt == 'start':
+      system_prompt = f"""
         Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
         Первый персонаж - {characters[self.name]["description"]}.\n
         Второй персонаж - {characters[self.companion]["description"]}.\n
         Оформи каждую реплику в виде **Имя**: Реплика.\n
       """
-      user_promt = """
-      Приводить диалог к логическому заврешению не нужно.
+      user_prompt = """
+      Приводить диалог к логическому завершению не нужно.
       """
 
-    if user_promt == 'stop':
-      system_promt = f"""
+    if user_prompt == 'stop':
+      system_prompt = f"""
         Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
         Первый персонаж - {characters[self.name]["description"]}.\n
         Второй персонаж - {characters[self.companion]["description"]}.\n
@@ -96,12 +96,12 @@ class Diologue:
         Часть уже прошедшего подкаста: \n
         {'\n'.join(self.history)}
       """
-      user_promt = """
+      user_prompt = """
       Приведи диалог к логическому завершению.
       """
 
     else:
-      system_promt = f"""
+      system_prompt = f"""
         Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
         Первый персонаж - {characters[self.name]["description"]}.\n
         Второй персонаж - {characters[self.companion]["description"]}.\n
@@ -110,17 +110,17 @@ class Diologue:
         {'\n'.join(self.history)}
       """
 
-      if user_promt == '':
-        user_promt = """
-          Продолжай тему разговора. Приводить диалог к логическому заврешению не нужно.
+      if user_prompt == '':
+        user_prompt = """
+          Продолжай тему разговора. Приводить диалог к логическому завершению не нужно.
         """
       else:
-        user_promt = f"""
-          Продолжи диалог, постепенно сменив тему на: {user_promt}.
-          Приводить диалог к логическому заврешению не нужно.
+        user_prompt = f"""
+          Продолжи диалог, постепенно сменив тему на: {user_prompt}.
+          Приводить диалог к логическому завершению не нужно.
         """
 
-    return request_LLM(system_promt, user_promt)
+    return request_LLM(system_prompt, user_prompt)
 
     def parse_response(self, response: str) -> list[dict]:
         parsed = []
@@ -136,8 +136,8 @@ class Diologue:
                     continue
         return parsed
 
-    def response(self, user_promt: str):
-        self.history += self.parse_respose(self.call_llm_api(user_promt))
+    def response(self, user_prompt: str):
+        self.history += self.parse_response(self.call_llm_api(user_prompt))
 
 
 class Sound:
@@ -156,7 +156,7 @@ class FrontManager:
         self.turn = 0
         self.character_a = character_a
         self.character_b = character_b
-        self.dialogue = Diologue(character_a, character_b)
+        self.dialogue = Dialogue(character_a, character_b)
         self.sound_id = 0
         self.tts = Sound()
         self.audio_queue = deque(maxlen=10)
