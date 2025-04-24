@@ -1,5 +1,6 @@
 import os
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from collections import deque
 import modules_api
 
@@ -21,24 +22,25 @@ characters = {
 FOLDER = os.getcwd()
 
 app = Flask(__name__)
+CORS(app)
 front_manager = None 
 
-@app.route("/start", methods=["POST"])
-def start():
-    global front_manager
-    character_a = request.json.get("character_a", "Диоген")
-    character_b = request.json.get("character_b", "Строитель")
-    front_manager = FrontManager(character_a, character_b)
-    front_manager.start()
-    return '', 204 
+@app.route('/signal', methods=['POST'])
+def handle_signal():
+  data = request.get_json()
+  if not data or 'type' not in data:
+    return jsonify({'error': 'Missing type in request'}), 400
+  signal_type = data['type']
+  if signal_type == 'start':
+      message = start()
+  elif signal_type == 'stop':
+      message = stop()
+  else:
+      return jsonify({'error': 'Invalid signal type'}), 400
 
-@app.route("/stop", methods=["POST"])
-def stop():
-    if front_manager:
-        front_manager.end()
-    return '', 204
+  return jsonify({'status': message})
 
-@app.route("/get_audio", methods=["GET"])
+@app.route("/messages", methods=["GET"])
 def get_audio():
     if front_manager is None:
         return jsonify({"error": "Диалог не инициализирован"}), 400
@@ -48,17 +50,31 @@ def get_audio():
         return jsonify({"status": "пусто"}), 204
 
     return jsonify({
-        "audio_path": data["audio"],
+        "audioUrl": data["audio"],
         "text": data["text"],
         "speaker": data["speaker"]
     })
 
-@app.post("/inject")
-def inject_topic(data: dict):
+@app.post("/send-topic")
+def inject_topic():
+    data = request.get_json()
     topic = data.get("topic", "")
     front_manager.inject_topic(topic)
     return {"status": "ok"}
 
+
+def start():
+    global front_manager
+    character_a = request.json.get("character_a", "Диоген")
+    character_b = request.json.get("character_b", "Строитель")
+    front_manager = FrontManager(character_a, character_b)
+    front_manager.start()
+    return 204 
+
+def stop():
+    if front_manager:
+        front_manager.end()
+    return 204
 
 def request_LLM(system_prompt: str, user_prompt: str) -> str:
   return modules_api.request_llm(system_prompt, user_prompt)
@@ -70,9 +86,9 @@ def request_from_front():
   return ''  
 
 class Dialogue:
-  def init(self, name: str):
+  def init(self, name: str, companion: str):
     self.name = name
-    self.companion
+    self.companion = companion
     self.history = []
 
   def call_llm_api(self, user_prompt: str) -> str:
