@@ -133,12 +133,12 @@ def call_llm_api(self, user_prompt: str) -> str:
         Часть уже прошедшего подкаста: \n""" + \
         '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
 
-          if user_prompt == '':
-              user_prompt = "Продолжай тему разговора. Приводить диалог к логическому завершению не нужно."
-          else:
-              user_prompt = f"Продолжи диалог, постепенно сменив тему на: {user_prompt}. Приводить диалог к логическому завершению не нужно."
+        if user_prompt == '':
+            user_prompt = "Продолжай тему разговора. Приводить диалог к логическому завершению не нужно."
+        else:
+            user_prompt = f"Продолжи диалог, постепенно сменив тему на: {user_prompt}. Приводить диалог к логическому завершению не нужно."
 
-      return request_LLM(system_prompt, user_prompt)
+    return request_LLM(system_prompt, user_prompt)
 
   def parse_response(self, response: str) -> list[dict]:
       parsed = []
@@ -220,5 +220,4 @@ class FrontManager:
 
     def end(self):
         self.next_turn('stop')
-
 
