@@ -49,7 +49,7 @@ def get_audio():
     if front_manager is None:
         return jsonify({"error": "Диалог не инициализирован"}), 400
     if front_manager.END and front_manager.turn - front_manager.END_turn == 10:
-      front_manager = None
+        front_manager = None
     data = front_manager.get_next()
     if data is None:
         return jsonify({"status": "пусто"}), 204
@@ -84,80 +84,80 @@ def stop():
     return 204
 
 def request_LLM(system_prompt: str, user_prompt: str) -> str:
-  return modules_api.request_llm(system_prompt, user_prompt)
+    return modules_api.request_llm(system_prompt, user_prompt)
 
 def request_TTS(voice: str, replica: str) -> bytes:
-  return modules_api.request_tts(voice, replica)
+    return modules_api.request_tts(voice, replica)
 
 def request_from_front():
-  return ''  
+    return ''  
 
 class Dialogue:
-  def __init__(self, name: str, companion: str):
-    self.name = name
-    self.companion = companion
-    self.history = []
+    def __init__(self, name: str, companion: str):
+        self.name = name
+        self.companion = companion
+        self.history = []
 
-def call_llm_api(self, user_prompt: str) -> str:
-    history_str = '\n'.join(self.history) 
-    
-    if user_prompt == 'start':
-      system_prompt = f"""
-        Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
-        Первый персонаж - {characters[self.name]["description"]}\n
-        Второй персонаж - {characters[self.companion]["description"]}\n
-        Оформи каждую реплику в виде **Имя**: Реплика.\n
-      """
-      user_prompt = """
-      Приводить диалог к логическому завершению не нужно.
-      """
+    def call_llm_api(self, user_prompt: str) -> str:
+        history_str = '\n'.join(self.history) 
+        
+        if user_prompt == 'start':
+            system_prompt = f"""
+                Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
+                Первый персонаж - {characters[self.name]["description"]}\n
+                Второй персонаж - {characters[self.companion]["description"]}\n
+                Оформи каждую реплику в виде **Имя**: Реплика.\n
+            """
+            user_prompt = """
+            Приводить диалог к логическому завершению не нужно.
+            """
 
-    elif user_prompt == 'stop':
-      system_prompt = f"""
-        Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
-        Первый персонаж - {characters[self.name]["description"]}.\n
-        Второй персонаж - {characters[self.companion]["description"]}.\n
-        Оформи каждую реплику в виде **Имя**: Реплика.\n
-        Часть уже прошедшего подкаста: \n""" + \
-        '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
-      user_prompt = """
-      Приведи диалог к логическому завершению.
-      """
+        elif user_prompt == 'stop':
+            system_prompt = f"""
+                Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
+                Первый персонаж - {characters[self.name]["description"]}.\n
+                Второй персонаж - {characters[self.companion]["description"]}.\n
+                Оформи каждую реплику в виде **Имя**: Реплика.\n
+                Часть уже прошедшего подкаста: \n""" + \
+                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
+            user_prompt = """
+            Приведи диалог к логическому завершению.
+            """
 
-    else:
-      system_prompt = f"""
-        Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
-        Первый персонаж - {characters[self.name]["description"]}.\n
-        Второй персонаж - {characters[self.companion]["description"]}.\n
-        Оформи каждую реплику в виде **Имя**: Реплика.\n
-        Часть уже прошедшего подкаста: \n""" + \
-        '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
+        else:
+            system_prompt = f"""
+                Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
+                Первый персонаж - {characters[self.name]["description"]}.\n
+                Второй персонаж - {characters[self.companion]["description"]}.\n
+                Оформи каждую реплику в виде **Имя**: Реплика.\n
+                Часть уже прошедшего подкаста: \n""" + \
+                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
 
         if user_prompt == '':
             user_prompt = "Продолжай тему разговора. Приводить диалог к логическому завершению не нужно."
         else:
             user_prompt = f"Продолжи диалог, постепенно сменив тему на: {user_prompt}. Приводить диалог к логическому завершению не нужно."
 
-    return request_LLM(system_prompt, user_prompt)
+        return request_LLM(system_prompt, user_prompt)
 
-  def parse_response(self, response: str) -> list[dict]:
-      parsed = []
-      lines = response.strip().split("\n")
+    def parse_response(self, response: str) -> list[dict]:
+        parsed = []
+        lines = response.strip().split("\n")
 
-      for line in lines:
-          line_clean = line.strip()
-          if line_clean.startswith("**") and "**" in line_clean[2:]:
-              try:
-                  name_end = line_clean.find("**", 2)
-                  speaker = line_clean[2:name_end]
-                  text = line_clean[name_end+2:].strip()
-                  parsed.append((speaker, text))
-              except Exception:
-                  continue
-      return parsed
+        for line in lines:
+            line_clean = line.strip()
+            if line_clean.startswith("**") and "**" in line_clean[2:]:
+                try:
+                    name_end = line_clean.find("**", 2)
+                    speaker = line_clean[2:name_end]
+                    text = line_clean[name_end+2:].strip()
+                    parsed.append((speaker, text))
+                except Exception:
+                    continue
+        return parsed
 
-  def response(self, user_prompt: str):
-      self.history += self.parse_response(self.call_llm_api(user_prompt))
+    def response(self, user_prompt: str):
+        self.history += self.parse_response(self.call_llm_api(user_prompt))
 
 
 class Sound:
