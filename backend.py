@@ -8,11 +8,11 @@ import modules_api
 characters = {
     'Диоген': {
         'description': "Диоген, древнегреческий философ. В своих ответах используй глубокие размышления, думай о высоком, используй примеры из времен древней греции.",
-        'voice': 'kirill',
+        'voice': 'ermil',
     },
     'Строитель': {
         'description': "Строитель, простой человек нашего времени. В своих ответах используй прямоту, думай приземленно, говори о жизненном.",
-        'voice': 'ermil',
+        'voice': 'zahar',
     }
 }
 
@@ -87,7 +87,7 @@ def request_LLM(system_prompt: str, user_prompt: str) -> str:
     return modules_api.request_llm(system_prompt, user_prompt)
 
 def request_TTS(voice: str, replica: str) -> bytes:
-    return modules_api.request_tts(voice, replica)
+    return modules_api.request_tts(replica, voice)
 
 def request_from_front():
     return ''  
@@ -150,6 +150,8 @@ class Dialogue:
                 try:
                     name_end = line_clean.find("**", 2)
                     speaker = line_clean[2:name_end]
+                    if speaker[-1] == ":":
+                        speaker = speaker[:-1]
                     text = line_clean[name_end+2:].strip()
                     parsed.append((speaker, text))
                 except Exception:
