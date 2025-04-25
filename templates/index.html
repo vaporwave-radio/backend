@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диалог персонажей</title>
+    <title>Vaporwave Radio Online</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Диалог персонажей</h1>
-        <div id="controls">
-            <button id="startBtn">Начать диалог</button>
-            <button id="stopBtn">Остановить диалог</button>
-            <input type="text" id="topicInput" placeholder="Введите тему">
-            <button id="sendTopicBtn">Отправить тему</button>
+    <div class="vaporwave-window">
+        <div class="window-title">
+            <span>📻 Vaporwave Radio Online</span>
         </div>
-        <div id="dialogue">
-            <!-- Диалог будет отображаться здесь -->
+        <div class="window-content">
+            <div id="dialogue" class="dialogue-box"></div>
+            <div class="input-row">
+                <input type="text" id="topicInput" placeholder="Type a new topic...">
+                <button id="sendTopicBtn">Send</button>
+            </div>
+            <div class="button-row">
+                <button id="startBtn">▶ Start</button>
+                <button id="stopBtn">■ Stop</button>
+            </div>
+            <audio id="audioPlayer" controls style="display:none"></audio>
         </div>
-        <audio id="audioPlayer" controls></audio>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

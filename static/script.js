@@ -43,20 +43,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sendTopicBtn.addEventListener('click', () => {
-        const topic = topicInput.value;
-        fetch('/send-topic', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ topic: topic })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                topicInput.value = '';
-            }
-        });
+        const topic = topicInput.value.trim();
+        if (topic) {
+            fetch('/send-topic', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ topic: topic })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    topicInput.value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error sending topic:', error);
+            });
+        }
     });
 
     function fetchMessages() {
@@ -71,6 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 playNextAudio();
             }
+        })
+        .catch(error => {
+            console.error('Error fetching messages:', error);
         });
     }
 

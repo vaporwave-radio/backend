@@ -106,7 +106,7 @@ class Dialogue:
         self.history = []
 
     def call_llm_api(self, user_prompt: str) -> str:
-        history_str = '\n'.join(self.history)
+        # history_str = '\n'.join(self.history)
 
         if user_prompt == 'start':
             system_prompt = f"""
@@ -126,7 +126,7 @@ class Dialogue:
                 Второй персонаж - {characters[self.companion]["description"]}.\n
                 Оформи каждую реплику в виде **Имя**: Реплика.\n
                 Часть уже прошедшего подкаста: \n""" + \
-                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
+                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history]) + '\nСтарайся не повторять уже сказанное.\n' 
             user_prompt = """
             Приведи диалог к логическому завершению.
             """
@@ -138,7 +138,7 @@ class Dialogue:
                 Второй персонаж - {characters[self.companion]["description"]}.\n
                 Оформи каждую реплику в виде **Имя**: Реплика.\n
                 Часть уже прошедшего подкаста: \n""" + \
-                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history])
+                '\n'.join([f'{x[0]}: {x[1]}' for x in self.history]) + '\nСтарайся не повторять уже сказанное.\n' 
 
         if user_prompt == '':
             user_prompt = "Продолжай тему разговора. Приводить диалог к логическому завершению не нужно."
