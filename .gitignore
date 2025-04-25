@@ -46,3 +46,5 @@ MANIFEST
 
 # macOS files
 .DS_Store
+
+static/audio
