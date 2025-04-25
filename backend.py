@@ -4,7 +4,6 @@ from flask_cors import CORS
 from collections import deque
 import modules_api
 
-
 characters = {
     'Диоген': {
         'description': "Диоген, древнегреческий философ. В своих ответах используй глубокие размышления, думай о высоком, используй примеры из времен древней греции.",
@@ -17,26 +16,31 @@ characters = {
 }
 
 FOLDER = os.getcwd()
+AUDIO_FOLDER = os.path.join(FOLDER, 'static', 'audio')
+os.makedirs(AUDIO_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 CORS(app)
-front_manager = None 
-###########################################
+front_manager = None
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-############################################
+@app.route('/audio/<path:filename>')
+def audio_file(filename):
+    return send_from_directory(AUDIO_FOLDER, filename)
+
 @app.route('/signal', methods=['POST'])
 def handle_signal():
     global front_manager
     data = request.get_json()
     if not data or 'type' not in data:
         return jsonify({'error': 'Missing type in request'}), 400
-    
+
     signal_type = data['type']
     if signal_type == 'start':
-        character_a = data.get('characterA', 'Диоген') 
+        character_a = data.get('characterA', 'Диоген')
         character_b = data.get('characterB', 'Строитель')
         front_manager = FrontManager(character_a, character_b)
         front_manager.start()
@@ -45,7 +49,7 @@ def handle_signal():
         front_manager = None
     else:
         return jsonify({'error': 'Invalid signal type'}), 400
-    
+
     return jsonify({'status': 'ok'})
 
 @app.route("/messages", methods=["GET"])
@@ -71,8 +75,7 @@ def inject_topic():
     topic = data.get("topic", "")
     if front_manager:
         front_manager.inject_topic(topic)
-    return jsonify({"status": "ok"}) 
-
+    return jsonify({"status": "ok"})
 
 def start():
     global front_manager
@@ -80,12 +83,11 @@ def start():
     character_b = request.json.get("character_b", "Строитель")
     front_manager = FrontManager(character_a, character_b)
     front_manager.start()
-    return 204 
+    return 204
 
 def stop():
     if front_manager:
         front_manager.end()
-
     return 204
 
 def request_LLM(system_prompt: str, user_prompt: str) -> str:
@@ -95,7 +97,7 @@ def request_TTS(voice: str, replica: str) -> bytes:
     return modules_api.request_tts(replica, voice)
 
 def request_from_front():
-    return ''  
+    return ''
 
 class Dialogue:
     def __init__(self, name: str, companion: str):
@@ -104,8 +106,8 @@ class Dialogue:
         self.history = []
 
     def call_llm_api(self, user_prompt: str) -> str:
-        history_str = '\n'.join(self.history) 
-        
+        history_str = '\n'.join(self.history)
+
         if user_prompt == 'start':
             system_prompt = f"""
                 Представь что персонажи ведут подкаст. Проведи диалог двух персонажей в размере 5 реплик на каждого.\n
@@ -166,17 +168,16 @@ class Dialogue:
     def response(self, user_prompt: str):
         self.history += self.parse_response(self.call_llm_api(user_prompt))
 
-
 class Sound:
     def __init__(self):
         pass
 
     def voice(self, speaker_name: str, text: str, id: int) -> str:
-      audio = request_TTS(characters[speaker_name]['voice'], text)
-      with open(f'audio/{id}.ogg', 'wb') as f:
-        f.write(audio)
-      return FOLDER + f'/audio/{id}.ogg'
-
+        audio = request_TTS(characters[speaker_name]['voice'], text)
+        audio_path = os.path.join(AUDIO_FOLDER, f'{id}.ogg')
+        with open(audio_path, 'wb') as f:
+            f.write(audio)
+        return f'/audio/{id}.ogg'
 
 class FrontManager:
     def __init__(self, character_a: str, character_b: str):
@@ -195,12 +196,12 @@ class FrontManager:
             self.dialogue.response(topic)
             self.END = True
         if not self.END:
-          if len(self.dialogue.history) < 20:
-              self.dialogue.response(topic)
+            if len(self.dialogue.history) < 20:
+                self.dialogue.response(topic)
         if self.END and self.END_turn == 0:
-          self.END_turn = self.turn
+            self.END_turn = self.turn
         elif self.END and self.turn - self.END_turn == 10:
-          return
+            return
         while self.turn < len(self.dialogue.history) and len(self.audio_queue) < 10:
             r = self.dialogue.history[self.turn]
             audio = self.tts.voice(r[0], r[1], self.turn)
@@ -230,5 +231,3 @@ class FrontManager:
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
-

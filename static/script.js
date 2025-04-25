@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const audioPlayer = document.getElementById('audioPlayer');
 
     let intervalId;
+    let isPlaying = false;
+    let audioQueue = [];
 
     startBtn.addEventListener('click', () => {
         fetch('/signal', {
@@ -62,19 +64,36 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (data.audioUrl && data.text && data.speaker) {
-                const audioUrl = data.audioUrl;
-                const text = data.text;
-                const speaker = data.speaker;
-
-                // Отображение текста диалога
-                const messageDiv = document.createElement('div');
-                messageDiv.innerHTML = `<strong>${speaker}:</strong> ${text}`;
-                dialogueDiv.appendChild(messageDiv);
-
-                // Воспроизведение звука
-                audioPlayer.src = audioUrl;
-                audioPlayer.play();
+                audioQueue.push({
+                    audioUrl: data.audioUrl,
+                    text: data.text,
+                    speaker: data.speaker
+                });
+                playNextAudio();
             }
         });
+    }
+
+    function playNextAudio() {
+        if (isPlaying || audioQueue.length === 0) {
+            return;
+        }
+
+        const nextAudio = audioQueue.shift();
+        isPlaying = true;
+
+        // Отображение текста диалога
+        const messageDiv = document.createElement('div');
+        messageDiv.innerHTML = `<strong>${nextAudio.speaker}:</strong> ${nextAudio.text}`;
+        dialogueDiv.appendChild(messageDiv);
+
+        // Воспроизведение звука
+        audioPlayer.src = nextAudio.audioUrl;
+        audioPlayer.play();
+
+        audioPlayer.onended = () => {
+            isPlaying = false;
+            playNextAudio();
+        };
     }
 });
