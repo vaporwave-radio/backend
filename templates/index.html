@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диалог персонажей</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Диалог персонажей</h1>
+        <div id="controls">
+            <button id="startBtn">Начать диалог</button>
+            <button id="stopBtn">Остановить диалог</button>
+            <input type="text" id="topicInput" placeholder="Введите тему">
+            <button id="sendTopicBtn">Отправить тему</button>
+        </div>
+        <div id="dialogue">
+            <!-- Диалог будет отображаться здесь -->
+        </div>
+        <audio id="audioPlayer" controls></audio>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

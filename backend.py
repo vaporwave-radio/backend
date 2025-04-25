@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, render_template
 from flask_cors import CORS
 from collections import deque
 import modules_api
@@ -21,7 +21,12 @@ FOLDER = os.getcwd()
 app = Flask(__name__)
 CORS(app)
 front_manager = None 
+###########################################
+@app.route('/')
+def index():
+    return render_template('index.html')
 
+############################################
 @app.route('/signal', methods=['POST'])
 def handle_signal():
     global front_manager
@@ -222,4 +227,8 @@ class FrontManager:
 
     def end(self):
         self.next_turn('stop')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+    
 
